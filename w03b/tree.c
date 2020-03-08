@@ -12,7 +12,7 @@ struct _BSTNode {
 };
 
 struct _SearchResult {
-    int success;
+    int isSuccess;
     int result;
 };
 typedef struct _SearchResult SearchResult;
@@ -57,7 +57,11 @@ BSTree tree(int key, BSTree left, BSTree right) {
 }
 
 void freeTree(BSTree t) {
-    // TODO
+    if (t != NULL) {
+        freeTree(t->left);
+        freeTree(t->right);
+        free(t);
+    }
 }
 
 void testCountNodes() {
@@ -83,8 +87,11 @@ void testCountNodes() {
 }
 
 int countNodes(BSTree t) {
-    // TODO
-    return 0;
+    if (t == NULL) {
+        return 0;
+    } else {
+        return 1 + countNodes(t->left) + countNodes(t->right);
+    }
 }
 
 
@@ -120,8 +127,11 @@ int max(int a, int b) {
 }
 
 int depth(BSTree t) {
-    // TODO
-    return 0;
+    if (t == NULL) {
+        return 0;
+    } else {
+        return max(depth(t->left), depth(t->right)) + 1;
+    }
 }
 
 
@@ -129,16 +139,20 @@ SearchResult fail() {
     return (SearchResult) {0, 0};
 }
 
+SearchResult failWithResult(int result) {
+    return (SearchResult) {0, result};
+}
+
 SearchResult success(int result) {
     return (SearchResult) {1, result};
 }
 
 int isFail(SearchResult r) {
-    return !r.success;
+    return !r.isSuccess;
 }
 
 int isSuccess(SearchResult r, int expectedResult) {
-    return r.success && r.result == expectedResult;
+    return r.isSuccess && r.result == expectedResult;
 }
 
 void testNodeDepth() {
@@ -167,8 +181,25 @@ void testNodeDepth() {
 
 // Returns depth of node with key
 SearchResult nodeDepth(BSTree t, int key) {
-    // TODO
-    return fail();
+    if (t == NULL) {
+        return fail();
+    } else if (key == t->key) {
+        return success(1);
+    } else {
+        SearchResult r;
+        if (key < t->key) {
+            r = nodeDepth(t->left, key);
+        } else {
+            r = nodeDepth(t->right, key);
+        }
+
+        if (isFail(r)) {
+            return r;
+        } else {
+            r.result++;
+            return r;
+        }
+    }
 }
 
 void testNthSmallest() {
@@ -198,13 +229,33 @@ void testNthSmallest() {
 // 1 -> smallest
 // 2 -> second smallest
 // etc.
-// assume all keys >= 0
-// return NOT_FOUND if n is too big
 SearchResult nthSmallest(BSTree t, int n) {
-    return fail();
+    if (t == NULL) {
+        return failWithResult(0);
+    } else {
+        SearchResult leftResult = nthSmallest(t->left, n);
+        if (isFail(leftResult)) {
+            int leftSize = leftResult.result;
+            if (leftSize == n - 1) {
+                return success(t->key);
+            } else {
+                SearchResult rightResult = nthSmallest(t->right, n - leftSize - 1);
+                if (isFail(rightResult)) {
+                    rightResult.result += leftSize + 1;
+                    return rightResult;
+                } else {
+                    return rightResult;
+                }
+            }
+        } else {
+            return leftResult;
+        }
+    }
 }
 
-void testInOrderSuccessor();
+void testInOrderSuccessor() {
+
+}
 
 SearchResult inOrderSuccessor(BSTree t, int key) {
     return fail();
