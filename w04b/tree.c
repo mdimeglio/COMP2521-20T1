@@ -372,7 +372,9 @@ void testIsSearchTree() {
                 10,
                 NULL,
                 tree(
-                    25
+                    25,
+                    NULL,
+                    NULL
                 )
             ),
             NULL
@@ -392,7 +394,8 @@ void testIsSearchTree() {
                         5,
                         NULL,
                         NULL
-                    )
+                    ),
+                    NULL
                 )
             ),
             NULL
