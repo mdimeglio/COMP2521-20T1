@@ -42,10 +42,10 @@ void testInOrderSuccessor();
 Successor inOrderSuccessor(BSTree t, int key);
 
 int main() {
-    testInOrderSuccessor();
     testIsHeightBalanced();
     testIsSymmetric();
     testIsSearchTree();
+    testInOrderSuccessor();
     printf("All tests passed!\n");
     return 0;
 }
@@ -160,6 +160,14 @@ int max(int a, int b) {
     }
 }
 
+int min(int a, int b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
 int abs(int a) {
     return max(a, -a);
 }
@@ -173,8 +181,13 @@ int height(BSTree t) {
 }
 
 int isHeightBalanced(BSTree t) {
-    // TODO
-    return 0;
+    return
+        t == NULL ||
+        (
+            isHeightBalanced(t->left) &&
+            isHeightBalanced(t->right) &&
+            abs(height(t->left) - height(t->right)) <= 1
+        );
 }
 
 
@@ -278,13 +291,20 @@ void testIsSymmetric() {
 }
 
 int isMirror(BSTree s, BSTree t) {
-    // TODO
-    return 0;
+    return
+        (s == NULL && t == NULL) ||
+        (
+            s != NULL &&
+            t != NULL &&
+            s->key == t->key &&
+            isMirror(s->left, t->right) &&
+            isMirror(s->right, t->left)
+        );
 }
 
 int isSymmetric(BSTree t) {
-    // TODO
-    return 0;
+    return t == NULL || isMirror(t->left, t->right);
+    // return isMirror(t, t);
 }
 
 
@@ -404,8 +424,33 @@ void testIsSearchTree() {
     freeTree(t);
 }
 
+int maxKey(BSTree t) {
+    if (t == NULL) {
+        return INT_MIN;
+    } else {
+        //return max(max(maxKey(t->left), maxKey(t->right)), t->key);
+        return max(t->key, maxKey(t->right)); // Assuming we already know that t is a search tree
+    }
+}
+
+int minKey(BSTree t) {
+    if (t == NULL) {
+        return INT_MAX;
+    } else {
+        return min(t->key, minKey(t->left)); // Assuming we already know that t is a search tree
+        //return min(min(minKey(t->left), minKey(t->right)), t->key);
+    }
+}
+
 int isSearchTree(BSTree t) {
-    return 0;
+    return
+        t == NULL ||
+        (
+            isSearchTree(t->left) &&
+            isSearchTree(t->right) &&
+            maxKey(t->left) < t->key &&
+            minKey(t->right) > t->key
+        );
 }
 
 
@@ -462,7 +507,26 @@ void testInOrderSuccessor() {
 }
 
 Successor inOrderSuccessor(BSTree t, int key) {
-    return keyNotFound();
+    if (t == NULL) {
+        return keyNotFound();
+    } else {
+        if (key == t->key) {
+            if (t->right != NULL) {
+                return successorFound(minKey(t->right));
+            } else {
+                return successorNotFound();
+            }
+        } else if (key < t->key) {
+            Successor s = inOrderSuccessor(t->left, key);
+            if (s.type == SUCCESSOR_NOT_FOUND) {
+                return successorFound(t->key);
+            } else {
+                return s;
+            }
+        } else { // key > t->key
+            return inOrderSuccessor(t->right, key);
+        }
+    }
 }
 
 
